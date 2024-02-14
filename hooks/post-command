@@ -65,8 +65,26 @@ docker_metadata_file_exists() {
 # the trivy executable.
 export PATH="${PATH}:${TRIVY_EXE_PATH%/*}"
 
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_CLEAR_CACHE:-}" ]] ; then
+  echo "Clearing trivy cache"
+  trivy fs --reset
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME:-}" ]]; then
+  if [[ -z "$GITHUB_TOKEN" ]] ; then
+    fail_with_message "trivy-scan" "If GITHUB_USERNAME set then GITHUB_TOKEN must be in environment"
+  fi
+
+  echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME" --password-stdin
+fi
+
 args=()
 fsargs=()
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-}" ]] ; then
+  args+=("-d")
+  echo "enabling trivy debug"
+fi
 
 final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
 args+=("--exit-code" "$final_exit_code")
