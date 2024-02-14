@@ -70,20 +70,21 @@ if [[ "${BUILDKITE_PLUGIN_TRIVY_CLEAR_CACHE:-false}" == true ]] ; then
   trivy fs --reset
 fi
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME:-}" ]]; then
-  if [[ -z "$GITHUB_TOKEN" ]] ; then
-    fail_with_message "trivy-scan" "If GITHUB_USERNAME set then GITHUB_TOKEN must be in environment"
-  fi
-
-  echo "$GITHUB_TOKEN" | docker login ghcr.io -u "$BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME" --password-stdin
-fi
-
 args=()
 fsargs=()
 
 if [[ "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-false}" == true ]] ; then
   args+=("-d")
   echo "enabling trivy debug"
+fi
+
+if [[ -n "${BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME:-}" ]]; then
+  if [[ -z "$GITHUB_TOKEN" ]] ; then
+    fail_with_message "trivy-scan" "If GITHUB_USERNAME set then GITHUB_TOKEN must be in environment"
+  fi
+
+  args+=("--username" "BUILDKITE_PLUGIN_TRIVY_GITHUB_USERNAME")
+  TRIVY_PASSWORD="$GITHUB_TOKEN"
 fi
 
 final_exit_code="${BUILDKITE_PLUGIN_TRIVY_EXIT_CODE:-1}"
