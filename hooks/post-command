@@ -65,7 +65,7 @@ docker_metadata_file_exists() {
 # the trivy executable.
 export PATH="${PATH}:${TRIVY_EXE_PATH%/*}"
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_CLEAR_CACHE:-}" ]] ; then
+if [[ "${BUILDKITE_PLUGIN_TRIVY_CLEAR_CACHE:-false}" == true ]] ; then
   echo "Clearing trivy cache"
   trivy fs --reset
 fi
@@ -81,7 +81,7 @@ fi
 args=()
 fsargs=()
 
-if [[ -n "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-}" ]] ; then
+if [[ "${BUILDKITE_PLUGIN_TRIVY_DEBUG:-false}" == true ]] ; then
   args+=("-d")
   echo "enabling trivy debug"
 fi
